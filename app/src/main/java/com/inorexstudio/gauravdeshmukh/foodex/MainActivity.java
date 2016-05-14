@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        factual = new Factual("L6nKIQGMoGgrwI69OE9eWQXDzEkVh6akI2F3eCWW","dS0hAvpSSddHV39XQy2v5RNttjCSbW4TuTasNKYV");
+        factual = new Factual("L6nKIQGMoGgrwI69OE9eWQXDzEkVh6akI2F3eCWW","API_KEY");
 
         lv = (ListView) findViewById(R.id.card_listView);
         mSearchView = (SearchView) findViewById(R.id.searchView);
