@@ -1,50 +1,26 @@
 package com.inorexstudio.gauravdeshmukh.foodex;
 
-import android.Manifest;
-import android.app.ActionBar;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.factual.driver.Circle;
 import com.factual.driver.Factual;
-import com.factual.driver.Filter;
 import com.factual.driver.Query;
 import com.factual.driver.ReadResponse;
-import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.common.collect.Lists;
-import com.lapism.searchview.adapter.SearchAdapter;
-import com.lapism.searchview.adapter.SearchItem;
-import com.lapism.searchview.history.SearchHistoryTable;
 import com.lapism.searchview.view.SearchCodes;
 import com.lapism.searchview.view.SearchView;
 
@@ -60,7 +36,6 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
     LocationManager locationManager;
     ProgressBar progressBar;
-//    EditText searchEditText;
     double latitude, longitude;
     private static final String TAG = "MAIN_ACTIVITY_ASYNC";
     public static final int USE_ADDRESS_NAME = 1;
@@ -70,8 +45,7 @@ public class MainActivity extends AppCompatActivity {
     Factual factual;
 
     String check = "Resume", name="";
-    //String finalUrl = null;
-   // NetworkInfo networkInfo;
+
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -89,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        searchEditText = (EditText) findViewById(R.id.searchEditText);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         locationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -114,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
         mSearchView.setHint("Search in the City");
         mSearchView.setHintSize(getResources().getDimension(R.dimen.search_text_medium));
         mSearchView.setVoice(false);
-//        mSearchView.setVoiceText("Voice");
         mSearchView.setAnimationDuration(300);
         mSearchView.setShadowColor(Color.LTGRAY);
         mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -137,151 +109,10 @@ public class MainActivity extends AppCompatActivity {
         mSearchView.setOnSearchMenuListener(new SearchView.SearchMenuListener() {
             @Override
             public void onMenuClick() {
-                Toast.makeText(MainActivity.this, "DUMMY", Toast.LENGTH_LONG).show();
+                Toast.makeText(MainActivity.this, "Gaurav Deshmukh", Toast.LENGTH_LONG).show();
             }
         });
 
-//        getLocation();
-    }
-
-    private void getLocation() {
-//        progressBar.setVisibility(View.VISIBLE);
-
-        if (!checkLocation())
-        return;
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        if(fetchType==USE_ADDRESS_LOCATION) {
-            if (check.equals("Pause")) {
-                locationManager.removeUpdates(locationListenerNetwork);
-                check = "Resume";
-            } else {
-                locationManager.requestLocationUpdates(
-                        LocationManager.NETWORK_PROVIDER, 60 * 1000, 10, locationListenerNetwork);
-                Toast.makeText(this, "Network provider started running", Toast.LENGTH_LONG).show();
-                check = "Pause";
-            }
-        }
-    }
-
-    private boolean checkLocation() {
-        if (!isLocationEnabled())
-            showAlert();
-        return isLocationEnabled();
-    }
-
-    private void showAlert() {
-        final AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-        dialog.setTitle("Enable Location")
-                .setMessage("Your Locations Settings is set to 'Off'.\nPlease Enable Location to " +
-                        "use this app")
-                .setPositiveButton("Location Settings", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                        Intent myIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(myIntent);
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface paramDialogInterface, int paramInt) {
-                    }
-                });
-        dialog.show();
-    }
-
-    private boolean isLocationEnabled() {
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-    }
-
-    public void toggleNetwork(View view) {
-        progressBar.setVisibility(View.VISIBLE);
-
-        if (!checkLocation())
-            return;
-        if (fetchType==USE_ADDRESS_NAME)
-            new GeocodeAsyncTask().execute();
-    }
-
-    private final LocationListener locationListenerNetwork = new LocationListener() {
-        public void onLocationChanged(Location location) {
-            longitude = location.getLongitude();
-            latitude = location.getLatitude();
-
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, "Your Location Updated", Toast.LENGTH_SHORT).show();
-                }
-            });
-            new GeocodeAsyncTask().execute();
-
-        }
-
-        @Override
-        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-        }
-
-        @Override
-        public void onProviderEnabled(String s) {
-
-        }
-
-        @Override
-        public void onProviderDisabled(String s) {
-
-        }
-    };
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.inorexstudio.gauravdeshmukh.foodex/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app deep link URI is correct.
-                Uri.parse("android-app://com.inorexstudio.gauravdeshmukh.foodex/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        client.disconnect();
     }
 
     class GeocodeAsyncTask extends AsyncTask<Void, Void, Address> {
